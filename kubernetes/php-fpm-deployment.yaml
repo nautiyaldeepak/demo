@@ -2,7 +2,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: php-fpm-configmap
+  name: php-fpm-config
   namespace: testing
 data:
   www.conf: |
@@ -48,12 +48,12 @@ spec:
           ports:
             - containerPort: 9000
           volumeMounts:
-          - name: php-fpm-configmap-volume
+          - name: php-fpm-config-volume
             mountPath: /etc/php/8.2/fpm/pool.d
       volumes:
-      - name: php-fpm-configmap-volume
+      - name: php-fpm-config-volume
         configMap:
-          name: php-fpm-configmap
+          name: php-fpm-config
 
 ---
 kind: Service 
