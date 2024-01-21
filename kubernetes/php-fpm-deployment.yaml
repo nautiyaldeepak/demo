@@ -22,3 +22,52 @@ data:
 
     pm = static
     pm.max_children = 20
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: php-fpm
+  namespace: testing
+  labels:
+    app: php-fpm
+    layer: backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: php-fpm
+  template:
+    metadata:
+      labels:
+        app: php-fpm 
+    spec:
+      containers:
+        - name: php-fpm
+          image: public.ecr.aws/o6a6b5p9/application:php-fpm-v2
+          ports:
+            - containerPort: 9000
+          volumeMounts:
+          - name: php-fpm-configmap-volume
+            mountPath: /etc/php/8.2/fpm/pool.d
+      volumes:
+      - name: php-fpm-configmap-volume
+        configMap:
+          name: php-fpm-configmap
+
+---
+kind: Service 
+apiVersion: v1 
+metadata:
+  name: php-fpm
+  namespace: testing
+  labels:
+    app: php-fpm
+    layer: backend
+spec:
+  type: ClusterIP
+  selector:
+    app: php-fpm
+  ports:
+    - port: 9000
+      targetPort: 9000
