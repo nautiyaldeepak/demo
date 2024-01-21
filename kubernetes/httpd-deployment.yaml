@@ -28,3 +28,52 @@ data:
         CustomLog /proc/self/fd/1 common
         ErrorLog /proc/self/fd/2
     </VirtualHost>
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: httpd-server
+  namespace: testing
+  labels:
+    app: httpd-server
+    layer: backend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: httpd-server
+  template:
+    metadata:
+      labels:
+        app: httpd-server
+    spec:
+      containers:
+        - name: httpd-server
+          image: public.ecr.aws/o6a6b5p9/application:httpd-v1
+          ports:
+            - containerPort: 80
+          volumeMounts:
+          - name: apache-httpd-config-volume
+            mountPath: /usr/local/apache2/conf/extra
+      volumes:
+      - name: apache-httpd-config-volume
+        configMap:
+          name: apache-httpd-config
+
+---
+kind: Service 
+apiVersion: v1 
+metadata:
+  name: httpd-server
+  namespace: testing
+  labels:
+    app: httpd-server
+    layer: backend
+spec:
+  type: ClusterIP
+  selector:
+    app: httpd-server
+  ports:
+    - port: 80
+      targetPort: 80
