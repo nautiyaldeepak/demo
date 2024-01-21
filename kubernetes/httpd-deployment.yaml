@@ -1,0 +1,30 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: apache-httpd-config
+  namespace: testing
+data:
+  apache.vhost.conf: |
+    # Set the ServerName to localhost
+    ServerName localhost
+
+    # Configure a VirtualHost to handle requests on port 80
+    <VirtualHost *:80>
+        # Proxy PHP requests to port 9000 PHP-FPM container
+        ProxyPassMatch ^/(.*\.php(/.*)?)$ fcgi://php-fpm:9000/app/public/$1
+        
+        # Set the DocumentRoot for the virtual host
+        DocumentRoot /app/public/
+        
+        # Directory configuration for the DocumentRoot
+        <Directory /app/public>
+            AllowOverride None
+            Require all granted
+            FallbackResource /index.php
+        </Directory>   
+
+        # Define the CustomLog and ErrorLog destinations
+        CustomLog /proc/self/fd/1 common
+        ErrorLog /proc/self/fd/2
+    </VirtualHost>
