@@ -39,6 +39,8 @@ $ kubectl port-forward svc/httpd-server 8080:80 -n testing
 ```
 Now, access the URL `http://127.0.0.1:8080` on your browser. Make sure it is `http` & not `https`, since there are no certificates. Use the URL to add/edit some content on the website (We're going to use this in Task 2).
 
+NOTE: When accessing the URL `http://127.0.0.1:8080`, there are some APIs which are not working. It'll give you `403 AccessDenied` error. This is an application level issue, therefore I haven't addressed them. When you're logging into the app make sure you use ADMIN_USER and not the other one.
+
 ## Task 2
 #### Database Migration
 There is a Sqlite database running on directory `/app/data/`. There is no Persistent Volume attached to the pod, the storage is ephemeral. So, basically here we need to migrate `/app/data/database.sqlite`. 
