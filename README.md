@@ -28,14 +28,24 @@ $ docker build -t php-fpm:v1 -f Dockerfile.php-fpm .
 ```
 
 #### Push docker images to a container registry.
-The below example is to push docker images to public Elastic Container Registry(ECR).
+The below example is to push docker images to a Container Registry.
 ```
-$ docker tag httpd:v1 public.ecr.aws/1a2b3c4d5e/application:httpd-v1
-$ docker tag php-fpm:v1 public.ecr.aws/1a2b3c4d5e/application:php-fpm-v1
-$ docker push public.ecr.aws/1a2b3c4d5e/application:httpd-v1
-# docker push public.ecr.aws/1a2b3c4d5e/application:php-fpm-v1
+$ docker tag httpd:v1 <repository_url>:httpd-v1
+$ docker tag php-fpm:v1 <repository_url>:php-fpm-v1
+$ docker push <repository_url>:httpd-v1
+# docker push <repository_url>:php-fpm-v1
 ```
-NOTE: If you're using some other container registry then just replace the `public.ecr.aws/1a2b3c4d5e/application` part with your own repository URL.
+These images will be used in the kubernetes deployment in the next step. You can use your own built images or you can also use my pre-built public images.
+Check your kubernetes nodes CPU architecture
+```
+$ kubectl describe nodes | grep arch=
+```
+
+Pre Built Public Images
+| arm64    | amd64 |
+| -------- | ------- |
+| `public.ecr.aws/o6a6b5p9/php-fpm:arm64-v1`  |  `public.ecr.aws/o6a6b5p9/php-fpm:amd64-v1`   |
+| `public.ecr.aws/o6a6b5p9/httpd:arm64-v1` | `public.ecr.aws/o6a6b5p9/httpd:amd64-v1`   |
 
 #### Deploy the microservices on Kubernetes
 The below commands will create a namespace `testing` & all the resources will be deployed in that namespace. I already have prebuild images which are being used in these deployments.
