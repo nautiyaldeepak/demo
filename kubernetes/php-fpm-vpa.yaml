@@ -2,7 +2,7 @@
 apiVersion: "autoscaling.k8s.io/v1"
 kind: VerticalPodAutoscaler
 metadata:
-  name: hamster-vpa
+  name: php-fpm-vpa
   namespace: testing
 spec:
   targetRef:
