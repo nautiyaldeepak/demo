@@ -77,3 +77,22 @@ spec:
   ports:
     - port: 80
       targetPort: 80
+
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: httpd-server-ingress
+  namespace: testing
+spec:
+  rules:
+  - host: httpd-server-api.acme.co
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: httpd-server
+            port:
+              number: 80
