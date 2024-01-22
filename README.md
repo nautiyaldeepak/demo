@@ -30,10 +30,10 @@ $ docker build -t php-fpm:v1 -f Dockerfile.php-fpm .
 #### Push docker images to a container registry.
 The below example is to push docker images to a Container Registry.
 ```
-$ docker tag httpd:v1 <repository_url>:httpd-v1
-$ docker tag php-fpm:v1 <repository_url>:php-fpm-v1
-$ docker push <repository_url>:httpd-v1
-# docker push <repository_url>:php-fpm-v1
+$ docker tag httpd:v1 <YOUR_REPOSITORY_URL>:httpd-v1
+$ docker tag php-fpm:v1 <YOUR_REPOSITORY_URL>:php-fpm-v1
+$ docker push <YOUR_REPOSITORY_URL>:httpd-v1
+# docker push <YOUR_REPOSITORY_URL>:php-fpm-v1
 ```
 These images will be used in the kubernetes deployment in the next step. You can use your own built images or you can also use my pre-built public images.
 
