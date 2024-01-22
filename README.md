@@ -8,14 +8,18 @@ We'll be deploying 2 microservices on Kubernetes. Our first microservice will be
 ```
     .
     ├── ...
-    ├── kubernetes                    # Kubernetes manifests
+    ├── resources                    # Additional Resources
+    │   ├── www.conf                    # FPM server pool.d conf
+    │   ├── apache.vhost.conf           # httpd server conf
+    │   ├── migration-script.sh         # migration script
+    ├── kubernetes                   # Kubernetes manifests
     │   ├── namespace.yaml
     │   ├── httpd-deployment.yaml
     │   ├── php-fpm-deployment.yaml
     │   └── php-fpm-vpa.yaml
-    ├── Dockerfile.httpd              # Apache Dockerfile
-    ├── Dockerfile.php-fpm            # PHP-FPM Dockerfile
-    ├── README.md                     # Updated README
+    ├── Dockerfile.httpd             # Apache Dockerfile
+    ├── Dockerfile.php-fpm           # PHP-FPM Dockerfile
+    ├── README.md                    # Updated README
     └── ...
 ```
 
