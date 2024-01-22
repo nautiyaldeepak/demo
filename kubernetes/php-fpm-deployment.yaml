@@ -2,7 +2,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: migration-script-configmap
+  name: migration-script-config
   namespace: testing
 data:
   migration-script.sh: |
