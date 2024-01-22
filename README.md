@@ -24,9 +24,9 @@ NOTE: If you're using some other container registry then just replace the `publi
 #### Deploy the microservices on Kubernetes
 The below commands will create a namespace `testing` & all the resources will be deployed in that namespace.
 ```
-$ kubectl apply -f namespace.yaml
-$ kubectl apply -f httpd-deployment.yaml
-$ kubectl apply -f php-fpm-deployment.yaml
+$ kubectl apply -f kubernetes/namespace.yaml
+$ kubectl apply -f kubernetes/httpd-deployment.yaml
+$ kubectl apply -f kubernetes/php-fpm-deployment.yaml
 ```
 NOTE: 
 1. The images used in kubernetes deployments are `public` images, so they can be pulled anywhere. The reason for keeping the images public is because the assignment allows us to keep the repository public. If the assignment would have asked to keep the repository private then I would also have kept the images private.
@@ -37,4 +37,27 @@ We're also deploying ingress resource but since there is no DNS mapping, we'll u
 ```
 $ kubectl port-forward svc/httpd-server 8080:80 -n testing
 ```
-Now, access the URL `http://127.0.0.1:8080` on your browser. Make sure it is `http` & not `https`, since there are no certificates.
+Now, access the URL `http://127.0.0.1:8080` on your browser. Make sure it is `http` & not `https`, since there are no certificates. Use the URL to add/edit some content on the website (We're going to use this in Task 2).
+
+## Task 2
+#### Database Migration
+There is a Sqlite database running on directory `/app/data/`. There is no Persistent Volume attached to the pod, the storage is ephemeral. So, basically here we need to migrate `/app/data/database.sqlite`. 
+In order to successfully migrate our data from current pod to the new pod we're using `postStart` lifeCycle hook on our `php-fpm` deployment. The lifecycle hook will execute a migration script which is going to copy `/app/data/database.sqlite` from the old container to the new container.
+This migration script has already been made part of `task 1`. So when you deployed task 1 the `migration script` was also deployed with the `php-fpm` deployemnt.
+
+#### Testing Task 2
+Our kubernetes deployments are already running from Task 1. We just need to update our `php-fpm` image. 
+In `kubernetes/php-fpm-deployment.yaml` file change the image tag from `public.ecr.aws/o6a6b5p9/application:php-fpm-v1` to `public.ecr.aws/o6a6b5p9/application:php-fpm-v2`. Both these images are exactly same, so you can also swhich it back from `v2` to `v1` as well.
+Now deploy the new image on kubernetes
+```
+$ kubectl apply -f kubernetes/php-fpm-deployment.yaml
+```
+This command will create a new pod and this new pod will copy the `/app/data/database.sqlite` from the previous running pod to this new pod & only after that this new pod will get into `Running` state & old pod will be `Terminated`.
+
+Now lets check the content of this new pod.
+```
+$ kubectl port-forward svc/httpd-server 8080:80 -n testing
+```
+Again access the URL `http://127.0.0.1:8080`. Check if the updated content from Task 1 still exists.
+
+NOTE: The migration-script is written in such a manner that if the deployment if happening for the first time then it'll know that there is no migration necessary.
