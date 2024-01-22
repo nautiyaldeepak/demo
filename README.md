@@ -4,6 +4,21 @@ Symfony Demo Application | Lingoda Assignment
 ## Summary
 We'll be deploying 2 microservices on Kubernetes. Our first microservice will be a httpd server & our second microservice will be running php-fpm8.2. The php-fpm server will be using TCP socket at port 9000. The user request will interact with httpd server & httpd server is going to act as a proxy server which is going to proxy forward the request to fpm server.  
 
+## All additional files created in this project
+```
+    .
+    ├── ...
+    ├── kubernetes                    # Kubernetes manifests
+    │   ├── namespace.yaml
+    │   ├── httpd-deployment.yaml
+    │   ├── php-fpm-deployment.yaml
+    │   └── php-fpm-vpa.yaml
+    ├── Dockerfile.httpd              # Apache Dockerfile
+    ├── Dockerfile.php-fpm            # PHP-FPM Dockerfile
+    ├── README.md                     # Updated README
+    └── ...
+```
+
 ## Requirements
 #### Start Minikube
 You can skip this step if you're using some other cluster of your own.
@@ -76,9 +91,9 @@ NOTE: When accessing the URL `http://127.0.0.1:8080`, there are some APIs which 
 
 ## Task 2
 #### Database Migration
-There is a Sqlite database running on directory `/app/data/`. There is no Persistent Volume attached to the pod, the storage is ephemeral. So, basically here we need to migrate `/app/data/database.sqlite`. 
-In order to successfully migrate our data from current pod to the new pod we're using `postStart` lifeCycle hook on our `php-fpm` deployment. The lifecycle hook will execute a migration script which is going to copy `/app/data/database.sqlite` from the old container to the new container.
-This migration script has already been made part of `task 1`. So when you deployed task 1 the `migration script` was also deployed with the `php-fpm` deployment.
+ 1. There is a Sqlite database running on directory `/app/data/`. There is no Persistent Volume attached to the pod, the storage is ephemeral. So, basically here we need to migrate `/app/data/database.sqlite`. 
+ 2. In order to successfully migrate our data from current pod to the new pod we're using `postStart` lifeCycle hook on our `php-fpm` deployment. The lifecycle hook will execute a migration script which is going to copy `/app/data/database.sqlite` from the old container to the new container.
+ 3. This migration script has already been made part of `task 1`. So when you deployed task 1 the `migration script` was also deployed with the `php-fpm` deployment.
 
 #### Testing Task 2
 Our kubernetes deployments are already running from Task 1. We just need to redeploy our `php-fpm` pod. Use the command below to rollout a new pod. 
