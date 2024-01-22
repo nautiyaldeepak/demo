@@ -2,6 +2,27 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
+  name: migration-script-configmap
+  namespace: testing
+data:
+  migration-script.sh: |
+    #!/bin/bash
+    echo "Executing postStart script..."
+    apt-get install curl -y
+    cd /
+    curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/arm64/kubectl"
+    chmod +x /kubectl
+    POD_NAME=$(/kubectl get pods -n testing | grep php-fpm | grep Running | awk '{print $1}')
+    if [ -z "$POD_NAME" ]; then
+        echo "null"
+    else
+        /kubectl cp $POD_NAME:/app/data/database.sqlite /app/data/database.sqlite -n testing
+    fi
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
   name: php-fpm-config
   namespace: testing
 data:
@@ -24,6 +45,42 @@ data:
     pm.max_children = 20
 
 ---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: php-fpm-service-account
+  namespace: testing
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: php-fpm-role
+  namespace: testing
+rules:
+- apiGroups: [""] # "" indicates the core API group
+  resources: ["pods"]
+  verbs: ["get", "watch", "list"]
+- apiGroups: [""]
+  resources: ["pods/exec"]
+  verbs: ["create", "get", "list", "update"]
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: php-fpm-role-binding
+  namespace: testing
+subjects:
+- kind: ServiceAccount
+  name: php-fpm-service-account
+  namespace: testing
+roleRef:
+  kind: Role
+  name: php-fpm-role
+  apiGroup: rbac.authorization.k8s.io
+
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -42,6 +99,7 @@ spec:
       labels:
         app: php-fpm 
     spec:
+      serviceAccountName: php-fpm-service-account
       containers:
         - name: php-fpm
           image: public.ecr.aws/o6a6b5p9/application:php-fpm-v2
@@ -50,11 +108,19 @@ spec:
           volumeMounts:
           - name: php-fpm-config-volume
             mountPath: /etc/php/8.2/fpm/pool.d
+          - name: migration-script-config-volume
+            mountPath: /etc/config
+          lifecycle:
+            postStart:
+              exec:
+                command: ["/bin/bash", "/etc/config/migration-script.sh"]
       volumes:
       - name: php-fpm-config-volume
         configMap:
           name: php-fpm-config
-
+      - name: migration-script-config-volume
+        configMap:
+          name: migration-script-config
 ---
 kind: Service 
 apiVersion: v1 
