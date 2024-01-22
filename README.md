@@ -76,3 +76,9 @@ NOTE: The migration-script is written in such a manner that if the deployment if
 Currently our php-fpm microservice is stateful, as the database is within the microservice itself. Due to this nature of the application it is impossible to scale the application hozizontally. The problem with horizontal scaling with current setup is that each replica of that microservice will have its own database. Therefore we can only have 1 replica of this microservice & it can only be scaled vertically & vertically scaling in this setup will bring challenges of its own.
 
 SOLUTION: In order to overcome this challenge we need to make our php-fpm microservice stateless. To do that we need to remove the database from within the application & manage it seperately. We can run a sqlite database as a stateful application on kubernetes or this application also allows us to use MYSQL & POSTGRES as well. We can also use AWS RDS managed service for database. Once we remove the database from the php-fpm microservice, the php-fpm microservice will become stateless. then it'll be possible to scale the application horizontally. Ofcourse, the php-fpm will access the external database using creds (database credentials will need to be updated in `.env` file).
+
+#### Setting up Vertical Pod Autoscaling
+Deploying metrics-server for VPA. VPA will use data from metrics-server to analyse the metrics of our microservices.
+```
+$ kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
+```
