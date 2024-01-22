@@ -37,10 +37,10 @@ $ kubectl apply -f kubernetes/php-fpm-deployment.yaml
 ```
 NOTE: 
 1. The images used in kubernetes deployments are `public` images, so they can be pulled anywhere. The reason for keeping the images public is because the assignment allows us to keep the repository public. If the assignment would have asked to keep the repository private then I would also have kept the images private.
-2. The images have been build on an `arm64` CPU architecture. Please make sure that your setup has a same architecture. Run the command `$ arch` on Mac terminal to know your systems architecture. If your deploying this on managed Kubernetes then make sure your nodes have `arm64` architecture. When creating managed nodeGroup on EKS it gives you to select the architecture type. If the architecture if not arm64, in that case you'll have to build the docker images first on your own system (follow previous steps) & then use those images in kubernetes manifests. If architecture is the issue then you might see an error like this one -> `exec /usr/sbin/php-fpm8.2: exec format error`. If you still face issue with it, contact me.
+2. The images have been built on an `arm64` CPU architecture. Please make sure that your setup has a same architecture. Run the command `$ arch` on Mac terminal to know your system's architecture. If you're deploying this on managed Kubernetes then make sure your nodes have `arm64` architecture. When creating managed nodeGroup on EKS it gives you an option to select the architecture type. If the architecture is not arm64, in that case you'll have to build the docker images first on your own system (follow previous steps) & then use those images in kubernetes manifests. If architecture is the issue then you might see an error like this one -> `exec /usr/sbin/php-fpm8.2: exec format error`. If you still face issue with it, contact me.
 
 #### Testing Task 1
-We're also deploying ingress resource but since there is no DNS mapping, we'll use port-forwading to test our task.
+We'll use port-forwading to test our task.
 ```
 $ kubectl port-forward svc/httpd-server 8080:80 -n testing
 ```
@@ -52,7 +52,7 @@ NOTE: When accessing the URL `http://127.0.0.1:8080`, there are some APIs which 
 #### Database Migration
 There is a Sqlite database running on directory `/app/data/`. There is no Persistent Volume attached to the pod, the storage is ephemeral. So, basically here we need to migrate `/app/data/database.sqlite`. 
 In order to successfully migrate our data from current pod to the new pod we're using `postStart` lifeCycle hook on our `php-fpm` deployment. The lifecycle hook will execute a migration script which is going to copy `/app/data/database.sqlite` from the old container to the new container.
-This migration script has already been made part of `task 1`. So when you deployed task 1 the `migration script` was also deployed with the `php-fpm` deployemnt.
+This migration script has already been made part of `task 1`. So when you deployed task 1 the `migration script` was also deployed with the `php-fpm` deployment.
 
 #### Testing Task 2
 Our kubernetes deployments are already running from Task 1. We just need to update our `php-fpm` image. 
