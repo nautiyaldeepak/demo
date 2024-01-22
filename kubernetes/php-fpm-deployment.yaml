@@ -107,7 +107,7 @@ spec:
       serviceAccountName: php-fpm-service-account
       containers:
         - name: php-fpm
-          image: public.ecr.aws/o6a6b5p9/application:php-fpm-v1
+          image: REPLACE_IMAGE
           ports:
             - containerPort: 9000
           volumeMounts:

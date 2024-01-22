@@ -50,7 +50,7 @@ spec:
     spec:
       containers:
         - name: httpd-server
-          image: public.ecr.aws/o6a6b5p9/application:httpd-v1
+          image: REPLACE_IMAGE
           ports:
             - containerPort: 80
           volumeMounts:

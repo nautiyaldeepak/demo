@@ -36,7 +36,8 @@ $ docker push <repository_url>:httpd-v1
 # docker push <repository_url>:php-fpm-v1
 ```
 These images will be used in the kubernetes deployment in the next step. You can use your own built images or you can also use my pre-built public images.
-Check your kubernetes nodes CPU architecture
+
+Check your kubernetes nodes CPU architecture. Based on that architecture use the pre-built images.
 ```
 $ kubectl describe nodes | grep arch=
 ```
@@ -47,6 +48,13 @@ Pre Built Public Images
 | `public.ecr.aws/o6a6b5p9/php-fpm:arm64-v1`  |  `public.ecr.aws/o6a6b5p9/php-fpm:amd64-v1`   |
 | `public.ecr.aws/o6a6b5p9/httpd:arm64-v1` | `public.ecr.aws/o6a6b5p9/httpd:amd64-v1`   |
 
+#### Replace image in kubernetes manifests
+Use the below commands to replace images in kubernetes manifests. 
+```
+$ sed -i '' 's|REPLACE_IMAGE|<YOUR_HTTPD_IMAGE_HERE>|g' kubernetes/httpd-deployment.yaml  # httpd image
+$ sed -i '' 's|REPLACE_IMAGE|<YOUR_PHP_FPM_IMAGE_HERE>|g' kubernetes/php-fpm-deployment.yaml  # php-fpm image
+```
+
 #### Deploy the microservices on Kubernetes
 The below commands will create a namespace `testing` & all the resources will be deployed in that namespace. I already have prebuild images which are being used in these deployments.
 ```
@@ -55,7 +63,7 @@ $ kubectl apply -f kubernetes/httpd-deployment.yaml
 $ kubectl apply -f kubernetes/php-fpm-deployment.yaml
 ```
 NOTE: 
-1. The images have been built on an `arm64` CPU architecture. Please make sure that your setup has a same architecture. Run the command `$ arch` on Mac terminal to know your system's architecture. If you're deploying this on managed Kubernetes then make sure your nodes have `arm64` architecture. When creating managed nodeGroup on EKS it gives you an option to select the architecture type. If the architecture is not arm64, in that case you'll have to build the docker images first on your own system (follow previous steps) & then use those images in kubernetes manifests. If architecture is the issue then you might see an error like this one -> `exec /usr/sbin/php-fpm8.2: exec format error`. If you still face issue with it, contact me.
+ 1. If images fail to get deployed, please double check the architecture of your nodes or contact me.
 
 #### Testing Task 1
 We'll use port-forwading to test our task.
