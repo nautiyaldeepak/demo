@@ -169,3 +169,4 @@ $ kubectl desribe vpa php-fpm-vpa -n testing            # See scaling recommenda
  2. I could have reduced docker image size by using multistage build and lighter base images.
  3. In place of kubernetes manifests, I could have implemented helm-charts.
  4. There can be improvements made on security, by adding securityContext for our pods.
+ 5. Horizontal Scaling can also be applied on `httpd-server`.
