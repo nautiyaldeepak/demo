@@ -27,37 +27,37 @@ We'll be deploying 2 microservices on Kubernetes. Our first microservice will be
 #### Start Minikube
 You can skip this step if you're using some other cluster of your own.
 ```
-$ minikube start
+minikube start
 ```
 #### Clone repository
 ```
-$ git clone https://github.com/nautiyaldeepak/demo.git
-$ git clone https://github.com/kubernetes/autoscaler.git
+git clone https://github.com/nautiyaldeepak/demo.git
+git clone https://github.com/kubernetes/autoscaler.git
 ```
 #### Change directory for task 1 & 2
 ```
-$ cd demo/
+cd demo/
 ``` 
 
 ## Task 1
 #### Dockerize `httpd` server & `php-fpm`
 ```
-$ docker build -t httpd:v1 -f Dockerfile.httpd .
-$ docker build -t php-fpm:v1 -f Dockerfile.php-fpm .
+docker build -t httpd:v1 -f Dockerfile.httpd .
+docker build -t php-fpm:v1 -f Dockerfile.php-fpm .
 ```
 
 #### Push docker images to a container registry.
 The below example is to push docker images to a `Container Registry`. You don't have to do this step, if you'll be using pre-built public images (mentioned below).
 ```
-$ docker tag httpd:v1 <YOUR_REPOSITORY_URL>:httpd-v1
-$ docker tag php-fpm:v1 <YOUR_REPOSITORY_URL>:php-fpm-v1
-$ docker push <YOUR_REPOSITORY_URL>:httpd-v1
-# docker push <YOUR_REPOSITORY_URL>:php-fpm-v1
+docker tag httpd:v1 <YOUR_REPOSITORY_URL>:httpd-v1
+docker tag php-fpm:v1 <YOUR_REPOSITORY_URL>:php-fpm-v1
+docker push <YOUR_REPOSITORY_URL>:httpd-v1
+docker push <YOUR_REPOSITORY_URL>:php-fpm-v1
 ```
 
 Check your kubernetes nodes CPU architecture. Based on that architecture use the `pre-built` `images`.
 ```
-$ kubectl describe nodes | grep arch=
+kubectl describe nodes | grep arch=
 ```
 
 Pre Built Public Images
@@ -69,17 +69,17 @@ Pre Built Public Images
 #### Replace image in kubernetes manifests
 Use the below commands to replace images in kubernetes manifests. 
 ```
-$ sed -i '' 's|REPLACE_IMAGE|<YOUR_HTTPD_IMAGE_HERE>|g' kubernetes/httpd-deployment.yaml  # httpd image
-$ sed -i '' 's|REPLACE_IMAGE|<YOUR_PHP_FPM_IMAGE_HERE>|g' kubernetes/php-fpm-deployment.yaml  # php-fpm image
-$ grep -r image kubernetes/            # Check if images have been replaced in kubernetes manifests correctly
+sed -i '' 's|REPLACE_IMAGE|<YOUR_HTTPD_IMAGE_HERE>|g' kubernetes/httpd-deployment.yaml  # httpd image
+sed -i '' 's|REPLACE_IMAGE|<YOUR_PHP_FPM_IMAGE_HERE>|g' kubernetes/php-fpm-deployment.yaml  # php-fpm image
+grep -r image kubernetes/            # Check if images have been replaced in kubernetes manifests correctly
 ```
 
 #### Deploy the microservices on Kubernetes
 The below commands will create a namespace `testing` & all the resources will be deployed in that namespace. I already have prebuild images which are being used in these deployments.
 ```
-$ kubectl apply -f kubernetes/namespace.yaml
-$ kubectl apply -f kubernetes/httpd-deployment.yaml
-$ kubectl apply -f kubernetes/php-fpm-deployment.yaml
+kubectl apply -f kubernetes/namespace.yaml
+kubectl apply -f kubernetes/httpd-deployment.yaml
+kubectl apply -f kubernetes/php-fpm-deployment.yaml
 ```
 NOTE: 
  1. If images fail to get deployed, please double check the architecture of your nodes or contact me.
@@ -87,7 +87,7 @@ NOTE:
 #### Testing Task 1
 We'll use port-forwading to test our task.
 ```
-$ kubectl port-forward svc/httpd-server --address 0.0.0.0 8080:80 -n testing
+kubectl port-forward svc/httpd-server --address 0.0.0.0 8080:80 -n testing
 ```
 Now, access the URL `http://0.0.0.0:8080` on your browser. Make sure it is `http` & not `https`, since there are no certificates. Use the URL to add/edit some content on the website (We're going to use this in Task 2).
 
@@ -102,13 +102,13 @@ NOTE: When accessing the URL `http://0.0.0.0:8080`, there are some APIs which ar
 #### Testing Task 2
 Our kubernetes deployments are already running from Task 1. We just need to redeploy our `php-fpm` pod. Use the command below to rollout a new pod. 
 ```
-$ kubectl rollout restart deployment php-fpm -n testing
+kubectl rollout restart deployment php-fpm -n testing
 ```
 This command will create a new pod and this new pod will copy the `/app/data/database.sqlite` from the previous running pod to this new pod & only after that this new pod will get into `Running` state & old pod will be `Terminated`.
 
 Now, lets check the content of this new pod.
 ```
-$ kubectl port-forward svc/httpd-server --address 0.0.0.0 8080:80 -n testing
+kubectl port-forward svc/httpd-server --address 0.0.0.0 8080:80 -n testing
 ```
 Again access the URL `http://0.0.0.0:8080`. Check if the updated content from Task 1 still exists.
 
@@ -123,25 +123,25 @@ NOTE: The migration-script is written in such a manner that if the deployment if
 Deploying metrics-server for VPA. VPA will use data from metrics-server to analyse the metrics of our microservices.
 If you're running on minikube then use the following command
 ```
-$ minikube addons enable metrics-server
+minikube addons enable metrics-server
 ```
 OR
 ```
-$ kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
+kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
 ```
 After deploying metrics-server, we'll deploy Vertical Pod Autoscaler custom resource from the autoscaler repository which we cloned earlier.
 ```
-$ cd ../autoscaler/vertical-pod-autoscaler/             #   Change directory
-$ ./hack/vpa-up.sh
+cd ../autoscaler/vertical-pod-autoscaler/             #   Change directory
+./hack/vpa-up.sh
 ```
 NOTE: `VPA` & `metrics-server` resources will be create in `kube-system` namespace
 
 Now we'll deploy VPA resource for `php-fpm` deployment.
 ```
-$ ../../demo
-$ kubectl apply -f kubernetes/php-fpm-vpa.yaml
-$ kubectl get vpa -n testing
-$ kubectl desribe vpa php-fpm-vpa -n testing            # See scaling recommendations made by VPA 
+../../demo
+kubectl apply -f kubernetes/php-fpm-vpa.yaml
+kubectl get vpa -n testing
+kubectl desribe vpa php-fpm-vpa -n testing            # See scaling recommendations made by VPA 
 ```
  1. The VPA only supports scaling on metrics cpu & memory. 
  2. The above VPA is using `standard` vpa recommender. 
