@@ -138,11 +138,12 @@ NOTE: `VPA` & `metrics-server` resources will be create in `kube-system` namespa
 
 Now we'll deploy VPA resource for `php-fpm` deployment.
 ```
-../../demo
+cd ../../demo
 kubectl apply -f kubernetes/php-fpm-vpa.yaml
 kubectl get vpa -n testing
-kubectl desribe vpa php-fpm-vpa -n testing            # See scaling recommendations made by VPA 
+kubectl describe vpa php-fpm-vpa -n testing            # See scaling recommendations made by VPA 
 ```
+NOTE: Metrics can take some time to show up.
  1. The VPA only supports scaling on metrics cpu & memory. 
  2. The above VPA is using `standard` vpa recommender. 
  3. App will vertically scale up if CPU/Memory usage crosses 90% threshold.
