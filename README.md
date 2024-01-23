@@ -61,10 +61,10 @@ kubectl describe nodes | grep arch=
 ```
 
 Pre Built Public Images
-| arm64    | amd64 |
-| -------- | ------- |
-| `public.ecr.aws/o6a6b5p9/php-fpm:arm64-v1`  |  `public.ecr.aws/o6a6b5p9/php-fpm:amd64-v1`   |
-| `public.ecr.aws/o6a6b5p9/httpd:arm64-v1` | `public.ecr.aws/o6a6b5p9/httpd:amd64-v1`   |
+| Images | arm64    | amd64 |
+| -------| -------- | ------- |
+| php-fpm | `public.ecr.aws/o6a6b5p9/php-fpm:arm64-v1`  |  `public.ecr.aws/o6a6b5p9/php-fpm:amd64-v1`   |
+| httpd | `public.ecr.aws/o6a6b5p9/httpd:arm64-v1` | `public.ecr.aws/o6a6b5p9/httpd:amd64-v1`   |
 
 #### Replace image in kubernetes manifests
 Use the below commands to replace images in kubernetes manifests. 
