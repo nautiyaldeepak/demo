@@ -47,14 +47,13 @@ $ docker build -t php-fpm:v1 -f Dockerfile.php-fpm .
 ```
 
 #### Push docker images to a container registry.
-The below example is to push docker images to a Container Registry.
+The below example is to push docker images to a Container Registry. You don't have to do this step, if you'll be using pre-built public images.
 ```
 $ docker tag httpd:v1 <YOUR_REPOSITORY_URL>:httpd-v1
 $ docker tag php-fpm:v1 <YOUR_REPOSITORY_URL>:php-fpm-v1
 $ docker push <YOUR_REPOSITORY_URL>:httpd-v1
 # docker push <YOUR_REPOSITORY_URL>:php-fpm-v1
 ```
-These images will be used in the kubernetes deployment in the next step. You can use your own built images or you can also use my pre-built public images.
 
 Check your kubernetes nodes CPU architecture. Based on that architecture use the pre-built images.
 ```
@@ -141,12 +140,12 @@ $ kubectl apply -f kubernetes/php-fpm-vpa.yaml
 ```
  1. The VPA only supports scaling on metrics cpu & memory. 
  2. The above VPA is using `standard` vpa recommender. 
- 3. App will vertically scale up if CPU/Memory usage crosses 90% threshold. The autoscaler will double the resource for which the threshold crossed.
+ 3. App will vertically scale up if CPU/Memory usage crosses 90% threshold.
 
 #### Challenges with the Current Setup
  1. The main issue with the current architecture is that, database and the app are running on the same container.
  2. Our app is now acting as a stateful application which is not fault tolerant & also not highly scalable.
- 3. We cannot not horizontal pod autoscaling for our app, as we cannot have have each replica running its own database.
+ 3. We cannot deploy horizontal pod autoscaling for our app, as we cannot have each replica running its own database.
  4. The same problem goes with database as well. If our pod is deleted due to some reason all our data is lost.
  5. Also, the scaling of database is also very difficult as the storage is the setup is ephemeral.
 
