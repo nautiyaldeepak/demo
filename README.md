@@ -2,7 +2,7 @@ Symfony Demo Application | Lingoda Assignment
 =============================================
 
 ## Summary
-We'll be deploying 2 microservices on Kubernetes. Our first microservice will be a httpd server & our second microservice will be running php-fpm8.2. The php-fpm server will be using TCP socket at port 9000. The user request will interact with httpd server & httpd server is going to act as a proxy server which is going to proxy forward the request to fpm server.  
+We'll be deploying 2 microservices on Kubernetes. Our first microservice will be a `httpd server` & our second microservice will be running `php-fpm8.2`. The php-fpm server will be using TCP socket at port `9000`. The user request will interact with httpd server & httpd server is going to act as a proxy server which is going to proxy forward the request to fpm server.  
 
 ## All additional files created in this project
 ```
@@ -47,7 +47,7 @@ $ docker build -t php-fpm:v1 -f Dockerfile.php-fpm .
 ```
 
 #### Push docker images to a container registry.
-The below example is to push docker images to a Container Registry. You don't have to do this step, if you'll be using pre-built public images.
+The below example is to push docker images to a `Container Registry`. You don't have to do this step, if you'll be using pre-built public images (mentioned below).
 ```
 $ docker tag httpd:v1 <YOUR_REPOSITORY_URL>:httpd-v1
 $ docker tag php-fpm:v1 <YOUR_REPOSITORY_URL>:php-fpm-v1
@@ -55,7 +55,7 @@ $ docker push <YOUR_REPOSITORY_URL>:httpd-v1
 # docker push <YOUR_REPOSITORY_URL>:php-fpm-v1
 ```
 
-Check your kubernetes nodes CPU architecture. Based on that architecture use the pre-built images.
+Check your kubernetes nodes CPU architecture. Based on that architecture use the `pre-built` `images`.
 ```
 $ kubectl describe nodes | grep arch=
 ```
@@ -119,7 +119,7 @@ NOTE: The migration-script is written in such a manner that if the deployment if
  1. Currently our php-fpm microservice is stateful, as the database is within the microservice itself. 
  2. Due to this nature of the application it is impossible to scale the application horizontally, as each microservice will have its own database. So we're going to scale this application vertically.
 
-#### Setting up Vertical Pod Autoscaling
+#### Setting up Vertical Pod Autoscaling (VPA)
 Deploying metrics-server for VPA. VPA will use data from metrics-server to analyse the metrics of our microservices.
 If you're running on minikube then use the following command
 ```
@@ -131,10 +131,12 @@ $ kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/la
 ```
 After deploying metrics-server, we'll deploy Vertical Pod Autoscaler custom resource from the autoscaler repository which we cloned earlier.
 ```
-$ cd ../autoscaler/vertical-pod-autoscaler/
+$ cd ../autoscaler/vertical-pod-autoscaler/             #   Change directory
 $ ./hack/vpa-up.sh
 ```
-Now we'll deploy VPA resource for or `php-fpm` deployment.
+NOTE: `VPA` & `metrics-server` resources will be create in `kube-system` namespace
+
+Now we'll deploy VPA resource for `php-fpm` deployment.
 ```
 $ ../../demo
 $ kubectl apply -f kubernetes/php-fpm-vpa.yaml
@@ -145,20 +147,20 @@ $ kubectl desribe vpa php-fpm-vpa -n testing            # See scaling recommenda
  2. The above VPA is using `standard` vpa recommender. 
  3. App will vertically scale up if CPU/Memory usage crosses 90% threshold.
 
-#### Challenges with the Current Setup
+#### Challenges with Scaling
  1. The main issue with the current architecture is that, database and the app are running on the same container.
  2. Our app is now acting as a stateful application which is not fault tolerant & also not highly scalable.
  3. We cannot deploy horizontal pod autoscaling for our app, as we cannot have each replica running its own database.
  4. The same problem goes with database as well. If our pod is deleted due to some reason all our data is lost.
- 5. Also, the scaling of database is also very difficult as the storage is the setup is ephemeral.
+ 5. Also, the scaling of database is also very difficult as the storage in this setup is ephemeral.
 
 
 ## Things I could have done differently
 #### Architectural Improvement
 ![architecture](https://github.com/kriasoft/Folder-Structure-Conventions/assets/30626234/df1fa856-4880-4e1d-90e3-e2af1304af06)
  1. In the diagram above we're segregating the database from the app.
- 2. The app is running independently of the database & now our php-fpm is stateless. If our app wants to interact with database it'll make the request to the database.
- 3. Since our php-fpm app in this setup is stateless we can apply horizontal pod autoscaling on this deployment. HPA also provides us with the flexibility to use custom-metrics. We can use metrics like `request rate`, `network throughput` to horizontally scale our application. 
+ 2. The app is running independently of the database & now our `php-fpm` is stateless. If our app wants to interact with database it'll make the request to the database.
+ 3. Since our `php-fpm` app in this setup is stateless we can apply horizontal pod autoscaling on this deployment. HPA also provides us with the flexibility to use custom-metrics. We can use metrics like `request rate` or `network throughput` to horizontally scale our application. 
  4. With horizontal pod autoscaling we can deploy multiple replicas for our app if the resource utilization crosses a certain threshold. This kind of setup will make our app fault tolerant & highly scalable.
  5. In this new setup, we'll manage our database independently. Our database can be scaled vertically & a database replica is also deployed which is going to act as a backup and also as failover DB.
 
