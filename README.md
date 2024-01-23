@@ -89,9 +89,9 @@ We'll use port-forwading to test our task.
 ```
 $ kubectl port-forward svc/httpd-server --address 0.0.0.0 8080:80 -n testing
 ```
-Now, access the URL `http://127.0.0.1:8080` on your browser. Make sure it is `http` & not `https`, since there are no certificates. Use the URL to add/edit some content on the website (We're going to use this in Task 2).
+Now, access the URL `http://0.0.0.0:8080` on your browser. Make sure it is `http` & not `https`, since there are no certificates. Use the URL to add/edit some content on the website (We're going to use this in Task 2).
 
-NOTE: When accessing the URL `http://127.0.0.1:8080`, there are some APIs which are not working. It'll give you `403 AccessDenied` error. This is an application level issue, therefore I haven't addressed them. When you're logging into the app make sure you use `ADMIN_USER` and not the `REGULAR_USER`.
+NOTE: When accessing the URL `http://0.0.0.0:8080`, there are some APIs which are not working. It'll give you `403 AccessDenied` error. This is an application level issue, therefore I haven't addressed them. When you're logging into the app make sure you use `ADMIN_USER` and not the `REGULAR_USER`.
 
 ## Task 2
 #### Database Migration
@@ -110,7 +110,7 @@ Now, lets check the content of this new pod.
 ```
 $ kubectl port-forward svc/httpd-server --address 0.0.0.0 8080:80 -n testing
 ```
-Again access the URL `http://127.0.0.1:8080`. Check if the updated content from Task 1 still exists.
+Again access the URL `http://0.0.0.0:8080`. Check if the updated content from Task 1 still exists.
 
 NOTE: The migration-script is written in such a manner that if the deployment if happening for the first time then it'll know that there is no migration necessary.
 
@@ -152,11 +152,18 @@ $ kubectl desribe vpa php-fpm-vpa -n testing            # See scaling recommenda
  4. The same problem goes with database as well. If our pod is deleted due to some reason all our data is lost.
  5. Also, the scaling of database is also very difficult as the storage is the setup is ephemeral.
 
-#### New Setup to resolve all the challenges
-Check the diagram below
-![diagram1 (1)](https://github.com/symfony/demo/assets/30626234/3d3881dd-53dc-4fc6-8cb0-fb7ea6aa7771)
+
+## Things I could have done differently
+#### Architectural Improvement
+![architecture](https://github.com/kriasoft/Folder-Structure-Conventions/assets/30626234/df1fa856-4880-4e1d-90e3-e2af1304af06)
  1. In the diagram above we're segregating the database from the app.
  2. The app is running independently of the database & now our php-fpm is stateless. If our app wants to interact with database it'll make the request to the database.
- 3. Since our php-fpm app in this setup is stateless we can apply horizontal pod autoscaling on this deployment. HPA also provides us with the flexibility to use custom-metrics.
+ 3. Since our php-fpm app in this setup is stateless we can apply horizontal pod autoscaling on this deployment. HPA also provides us with the flexibility to use custom-metrics. We can use metrics like `request rate`, `network throughput` to horizontally scale our application. 
  4. With horizontal pod autoscaling we can deploy multiple replicas for our app if the resource utilization crosses a certain threshold. This kind of setup will make our app fault tolerant & highly scalable.
- 5. In this new setup, we'll manage our database independently. Our database can be deployed as a statefulset or we can also use AWS managed service (AWS RDS).
+ 5. In this new setup, we'll manage our database independently. Our database can be scaled vertically & a database replica is also deployed which is going to act as a backup and also as failover DB.
+
+#### Miscellaneous Improvements
+ 1. This entire process can be implemented on a CI/CD pipeline.
+ 2. I could have reduced docker image size by using multistage build and lighter base images.
+ 3. In place of kubernetes manifests, I could have implemented helm-charts.
+ 4. There can be improvements made on security, by adding securityContext for our pods.
