@@ -108,6 +108,13 @@ spec:
       containers:
         - name: php-fpm
           image: REPLACE_IMAGE
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "250m"
+            limits:
+              memory: "1024Mi"
+              cpu: "500m"
           ports:
             - containerPort: 9000
           volumeMounts:

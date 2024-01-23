@@ -51,6 +51,13 @@ spec:
       containers:
         - name: httpd-server
           image: REPLACE_IMAGE
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "100m"
+            limits:
+              memory: "512Mi"
+              cpu: "250m"
           ports:
             - containerPort: 80
           volumeMounts:
