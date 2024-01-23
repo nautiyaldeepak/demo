@@ -171,3 +171,4 @@ NOTE: Metrics can take some time to show up.
  3. In place of kubernetes manifests, I could have implemented helm-charts.
  4. There can be improvements made on security, by adding securityContext for our pods.
  5. Horizontal Scaling can also be applied on `httpd-server`.
+ 6. In a proper `prod` environment, I would've used proper branches to manage my work. Currently I've directly commited my work on `master`.
