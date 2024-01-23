@@ -71,6 +71,7 @@ Use the below commands to replace images in kubernetes manifests.
 ```
 $ sed -i '' 's|REPLACE_IMAGE|<YOUR_HTTPD_IMAGE_HERE>|g' kubernetes/httpd-deployment.yaml  # httpd image
 $ sed -i '' 's|REPLACE_IMAGE|<YOUR_PHP_FPM_IMAGE_HERE>|g' kubernetes/php-fpm-deployment.yaml  # php-fpm image
+$ grep -r image kubernetes/            # Check if images have been replaced in kubernetes manifests correctly
 ```
 
 #### Deploy the microservices on Kubernetes
@@ -86,7 +87,7 @@ NOTE:
 #### Testing Task 1
 We'll use port-forwading to test our task.
 ```
-$ kubectl port-forward svc/httpd-server 8080:80 -n testing
+$ kubectl port-forward svc/httpd-server --address 0.0.0.0 8080:80 -n testing
 ```
 Now, access the URL `http://127.0.0.1:8080` on your browser. Make sure it is `http` & not `https`, since there are no certificates. Use the URL to add/edit some content on the website (We're going to use this in Task 2).
 
@@ -107,7 +108,7 @@ This command will create a new pod and this new pod will copy the `/app/data/dat
 
 Now, lets check the content of this new pod.
 ```
-$ kubectl port-forward svc/httpd-server 8080:80 -n testing
+$ kubectl port-forward svc/httpd-server --address 0.0.0.0 8080:80 -n testing
 ```
 Again access the URL `http://127.0.0.1:8080`. Check if the updated content from Task 1 still exists.
 
@@ -137,6 +138,8 @@ Now we'll deploy VPA resource for or `php-fpm` deployment.
 ```
 $ ../../demo
 $ kubectl apply -f kubernetes/php-fpm-vpa.yaml
+$ kubectl get vpa -n testing
+$ kubectl desribe vpa php-fpm-vpa -n testing            # See scaling recommendations made by VPA 
 ```
  1. The VPA only supports scaling on metrics cpu & memory. 
  2. The above VPA is using `standard` vpa recommender. 
